@@ -6,9 +6,9 @@ spring:
     name: ledgerline-banking
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bankingdb
-    username: banking_user
-    password: banking_pass123
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/bankingdb}
+    username: ${DB_USERNAME:banking_user}
+    password: ${DB_PASSWORD:banking_pass123}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -28,10 +28,22 @@ spring:
 
 app:
   jwt:
-    secret: "3f8b9c1a7d2e4f6091b8c3a5d7e9f1023f8b9c1a7d2e4f6091b8c3a5d7e9f102"
-    expiration-ms: 86400000   # 24 hours
+    secret: ${JWT_SECRET:3f8b9c1a7d2e4f6091b8c3a5d7e9f1023f8b9c1a7d2e4f6091b8c3a5d7e9f102}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24 hours
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 logging:
   level:
     org.hibernate.SQL: WARN
     com.bank.banking: INFO
+
