@@ -30,7 +30,7 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgres/data
-          redinessProbe:
+          readinessProbe:
             exec:
               command: ["pg_isready","-U","banking_user","-d","bankingdb"]
             initialDelaySeconds: 10
