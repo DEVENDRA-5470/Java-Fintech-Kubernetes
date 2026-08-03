@@ -1,7 +1,7 @@
 prometheus:
   prometheusSpec:
     retention: 15d
-    nodeselector:
+    nodeSelector:
       role: monitoring
     storageSpec:
       volumeClaimTemplate:
@@ -20,10 +20,10 @@ prometheus:
         memory: 1Gi
 
 grafana:
-  nodeselector:
+  nodeSelector:
     role: monitoring
   persistence:
-    enable: true
+    enabled: true
     storageClassName: local-path
     size: 5Gi
   adminPassword: "StrongPassword123!"
@@ -43,6 +43,7 @@ alertmanager:
           resources:
             requests:
               storage: 2Gi
+
 additionalPrometheusRulesMap:
   custom-crashloop-rule:
     groups:
@@ -55,4 +56,10 @@ additionalPrometheusRulesMap:
               severity: warning
             annotations:
               description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is in CrashLoopBackOff"
-
+          - alert: KubePodOOMKilled
+            expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+            for: 10s
+            labels:
+              severity: critical
+            annotations:
+              description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} was OOMKilled"
