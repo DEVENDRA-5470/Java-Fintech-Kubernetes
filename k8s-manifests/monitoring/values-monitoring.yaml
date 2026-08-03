@@ -20,7 +20,7 @@ prometheus:
         memory: 1Gi
 
 grafana:
-  nodeselector:
+  nodeSelector:
     kubernetes.io/hostname: monitoring-node
   persistence:
     enabled: true
@@ -43,14 +43,30 @@ alertmanager:
           resources:
             requests:
               storage: 2Gi
-            
-
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: 'discord-notifications'
+      group_by: ['namespace', 'alertname']
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 4h
+      routes:
+        - receiver: 'null'
+          matchers:
+            - alertname = "Watchdog"
+    receivers:
+      - name: 'null'
+      - name: 'discord-notifications'
+        discord_configs:
+          - webhook_url: 'https://discord.com/api/webhooks/1533798400737153156/Z4wM0ym1VPyDZau7QbxoGHYzaz0a-7dnixVLkyoSD_F3rbqWS3sDl5hdMj82LlMUHkKR'
 additionalPrometheusRulesMap:
   custom-crashloop-rule:
     groups:
       - name: custom-kubernetes-apps
         rules:
-          - alert: kubePodCrashLoopingFast
+          - alert: KubePodCrashLoopingFast
             expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}[5m]) >= 1
             for: 30s
             labels:
@@ -58,7 +74,7 @@ additionalPrometheusRulesMap:
             annotations:
               description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is in CrashLoopBackOff"
 
-          - alert: kubePodOOMKilled
+          - alert: KubePodOOMKilled
             expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
             for: 10s
             labels:
