@@ -43,6 +43,9 @@ alertmanager:
           resources:
             requests:
               storage: 2Gi
+  service:
+    type: NodePort
+    nodePort: 30093
   config:
     global:
       resolve_timeout: 5m
