@@ -60,7 +60,7 @@ additionalPrometheusRulesMap:
 
           - alert: kubePodOOMKilled
             expr: max_overtime(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}) == 1
-            for: 30s
+            for: 10s
             labels:
               severity: critical
             annotation:
