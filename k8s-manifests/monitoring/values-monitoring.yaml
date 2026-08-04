@@ -20,7 +20,7 @@ prometheus:
         memory: 1Gi
 
 grafana:
-  nodeselector:
+  nodeSelector:
     kubernetes.io/hostname: monitoring-node
   persistence:
     enabled: true
@@ -47,6 +47,7 @@ alertmanager:
   service:
     type: NodePort
     nodePort: 30093
+    
   config:
     global:
       resolve_timeout: 5m    
