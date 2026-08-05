@@ -11,7 +11,7 @@ RUN npm ci
 COPY frontend/ .
 
 
-ARG VITE_API_URL=http://44.211.85.188:30080/api
+ARG VITE_API_URL=http://api.bank.devilhai.info/api
 
 RUN npm run build
 
