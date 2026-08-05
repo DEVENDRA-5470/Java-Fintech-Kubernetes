@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata: 
+metadata:
   name: backend
   namespace: banking
 
 spec:
-  replicas: 1
+  replicas: 2   # single pod = single point of failure; 2 gives baseline redundancy, HPA scales further under load
   selector:
     matchLabels:
       app: backend
@@ -14,8 +14,9 @@ spec:
       labels:
         app: backend
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: worker-node-1
+      # nodeSelector removed — pinning all replicas to worker-node-1 defeats horizontal scaling
+      # and creates a single point of failure (if that node dies, backend is fully down).
+      # Let the scheduler spread pods across available worker nodes.
       containers:
         - name: backend
           image: deviliam/java-banking-backend:1.1
@@ -33,20 +34,37 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret 
+                  name: postgres-secret
                   key: POSTGRES_PASSWORD
             - name: JWT_SECRET
-              value: "1df0f6fe85156663c1c36121a92b3fc1702bcf52779752d63c25d75915bcd831"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: JWT_SECRET
             - name: JWT_EXPIRATION_MS
               value: "86400000"
             - name: CORS_ALLOWED_ORIGIN
               value: "*"
-          
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=50.0"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "768Mi"
+              cpu: "1000m"
           readinessProbe:
-            httpGet: 
-              path: /actuator/health
+            httpGet:
+              path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 50
-            periodSeconds: 10  
-
-      
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
