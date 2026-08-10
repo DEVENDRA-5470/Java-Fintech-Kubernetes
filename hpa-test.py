@@ -9,7 +9,7 @@ import httpx
 
 TARGET_URL = "http://api.bank.devilhai.info/api/auth/register"
 TOTAL_REQUESTS = 5000
-CONCURRENCY = 1000
+CONCURRENCY = 100
 
 
 def build_payload():
