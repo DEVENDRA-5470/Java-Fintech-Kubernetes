@@ -18,8 +18,13 @@ spec:
         app: backend
 
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: worker-node-1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: backend
 
       containers:
         - name: backend
