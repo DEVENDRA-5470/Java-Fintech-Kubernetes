@@ -14,8 +14,14 @@ spec:
       labels:
         app: backend
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: worker-node-1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+             app: backend
+
       containers:
         - name: backend
           image: deviliam/java-banking-backend:1.1
@@ -41,11 +47,23 @@ spec:
               value: "86400000"
             - name: CORS_ALLOWED_ORIGIN
               value: "*"
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+
           readinessProbe:
             httpGet: 
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 50
+            initialDelaySeconds: 40
             periodSeconds: 10  
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
 
       
